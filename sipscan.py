@@ -54,6 +54,7 @@ def cleanips():
                 socket.gethostbyname(ips[ipind])
             except socket.gaierror:
                 ips.pop(ipind)
+    ips.sort()
 
 
 def addLocalNetwork():
@@ -73,3 +74,89 @@ def importFromFile(file=""):
         ips.extend(open(file, "r").read().split())
 
 
+def main():
+    alive = localnetwork = hostnames = text = False
+    visual = True
+    earg = ""
+    if len(argv) < 1 and stdin.isatty():
+        print("Error: no targets given")
+        help()
+        return
+    for i in argv[1:]:
+        if earg == "f":
+            importFromFile(i)
+            continue
+        if (i == "-a" or i == "-alive" or i == "--alive"):
+            alive = True
+        elif (i == "-vi" or i == "-visual" or i == "--visual"):
+            visual = True
+            text = False
+        elif (i == "-t" or i == "-text" or i == "--text"):
+            text = True
+            visual = False
+        elif(i == "-ln" or i == "-local" or i == "--local"):
+            localnetwork = True
+        elif(i == "-hn" or i == "-hostname" or i == "--hostname"):
+            hostnames = False
+        elif(i == "-h" or i == "-help" or i == "--help"):
+            help()
+            return
+        elif(i == "-f" or i == "-file" or i == "--file"):
+            earg = "f"
+        elif(i[0] == "-"):
+            print("Error: " + i + " Doesnt exist.")
+            help()
+            return
+        elif(re.search(r"\d{1,3}.\d{1,3}.\d{1,3}.(\d{1,3}/\d{2}|(\d{1,3}-\d{1,3}|\d{1,3}))", i) != None):
+            ips.append(i)
+        else:
+            try:
+                socket.gethostbyname(i)
+            except socket.gaierror:
+                pass
+            else:
+                ips.append(i)
+
+        importFromFile()  # check to see if given nothing
+        if localnetwork:
+            addLocalNetwork()
+
+        if len(ips) == 0:
+            print("Error: no targets given.")
+            help()
+            return
+
+        # Generator code
+        cleanips()
+        if visual:
+            if alive:
+                print("Alive Hosts:")
+                # TODO: setup way to ping hosts
+            else:
+                print("Hostname (ip address)")
+                for ip in ips:
+                    try:
+                        hostname = Scanner.getfqdn(ip)
+                        ipaddr = Scanner.gethostbyname(ip)
+                    except:
+                        continue
+                    else:
+                        if hostname != ipaddr:
+                            print(hostname + " (" + ipaddr + ")")
+        elif text:
+            for ip in ips:
+                try:
+                    hostname = Scanner.getfqdn(ip)
+                    ipaddr = Scanner.gethostbyname(ip)
+                except:
+                    continue
+                else:
+                    if hostname != ipaddr:
+                        if hostnames:
+                            print(ipaddr + ":" + hostname)
+                        else:
+                            print(ipaddr)
+
+
+if __name__ == "__main__":
+    main()
