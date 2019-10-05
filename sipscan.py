@@ -54,3 +54,15 @@ def cleanips():
                 socket.gethostbyname(ips[ipind])
             except socket.gaierror:
                 ips.pop(ipind)
+
+
+def addLocalNetwork():
+    # opens a socket on computer to connect to internet
+    dnsServer = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    dnsServer.connect(("8.8.8.8", 80))  # Talks to dns provider from google
+    localip = dnsServer.getsockname()[0]  # this will get the local ip
+    dnsServer.close()  # Turns off socket for possible later use
+    for directAddr in range(256):  # 192.168.1.0-255
+        ips.append(localip[:localip.rfind(".")+1] + str(directAddr))
+
+
