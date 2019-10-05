@@ -66,3 +66,10 @@ def addLocalNetwork():
         ips.append(localip[:localip.rfind(".")+1] + str(directAddr))
 
 
+def importFromFile(file=""):
+    if file == "" and not stdin.isatty():
+        ips.extend(stdin.read().split())
+    elif file != "":
+        ips.extend(open(file, "r").read().split())
+
+
